@@ -1,0 +1,2121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#07130f">
+<title>EcoCampus | Smart Sustainability Tracker</title>
+
+<style>
+:root {
+  --bg: #07130f;
+  --panel: rgba(13,33,25,.88);
+  --panel-light: #122b20;
+  --green: #8bff9b;
+  --green-dark: #2ecc71;
+  --text: #f2fff5;
+  --muted: #9bb5a3;
+  --border: #234433;
+
+  /* LEEF AI colours */
+  --ai-primary: #8b5cf6;
+  --ai-secondary: #6366f1;
+  --ai-light: #c4b5fd;
+  --ai-panel: #17152d;
+  --ai-border: rgba(167,139,250,.35);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100vh;
+  overflow-x: hidden;
+  background: var(--bg);
+  color: var(--text);
+  font-family: Inter, "Segoe UI", Arial, sans-serif;
+  line-height: 1.6;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 10% 10%, #17452b55, transparent 35%),
+    radial-gradient(ellipse at 90% 45%, #0b693033, transparent 35%),
+    radial-gradient(ellipse at 45% 95%, #123c2755, transparent 35%);
+}
+
+button, input, select {
+  font: inherit;
+}
+
+button, a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button {
+  cursor: pointer;
+  transition: .25s ease;
+}
+
+button:hover {
+  transform: translateY(-2px);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+h1, h2, h3 {
+  line-height: 1.2;
+  letter-spacing: -.4px;
+}
+
+h2 {
+  font-size: clamp(1.8rem, 4vw, 2.6rem);
+  margin: 12px 0;
+}
+
+h3 {
+  font-size: 1.15rem;
+  margin-bottom: 12px;
+}
+
+p {
+  color: var(--muted);
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--green);
+  outline-offset: 3px;
+}
+
+.bubble {
+  position: fixed;
+  z-index: -1;
+  width: 240px;
+  height: 240px;
+  border-radius: 50%;
+  filter: blur(70px);
+  opacity: .13;
+  pointer-events: none;
+  animation: float 12s ease-in-out infinite alternate;
+}
+
+.bubble.one {
+  background: #2ecc71;
+  top: 15%;
+  left: -120px;
+}
+
+.bubble.two {
+  background: #8bff9b;
+  bottom: 10%;
+  right: -160px;
+  animation-delay: -4s;
+}
+
+@keyframes float {
+  to { transform: translate(35px,-45px) scale(1.15); }
+}
+
+@keyframes appear {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse {
+  50% { box-shadow: 0 0 0 12px transparent; }
+}
+
+@keyframes chatIn {
+  from { opacity: 0; transform: translateY(15px) scale(.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* NAVIGATION */
+
+.navbar {
+  position: sticky;
+  top: 10px;
+  z-index: 100;
+  width: min(1250px, calc(100% - 28px));
+  margin: 12px auto 0;
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  background: rgba(13,33,25,.88);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: 0 15px 45px #0003;
+}
+
+.brand {
+  color: var(--green);
+  font-size: 1.35rem;
+  font-weight: 900;
+  white-space: nowrap;
+  letter-spacing: 1px;
+}
+
+nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+}
+
+.nav-link {
+  position: relative;
+  padding: 5px 0;
+  color: var(--muted);
+  font-size: .88rem;
+  transition: color .2s;
+}
+
+.nav-link:hover,
+.nav-link.active {
+  color: var(--green);
+}
+
+.nav-link.active::after {
+  content: "";
+  position: absolute;
+  bottom: -5px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--green);
+  border-radius: 5px;
+}
+
+/* BUTTONS */
+
+.primary-btn,
+.secondary-btn {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 17px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  font-weight: 750;
+}
+
+.primary-btn {
+  background: var(--green);
+  color: #07130f;
+}
+
+.primary-btn:hover {
+  background: var(--green-dark);
+  box-shadow: 0 0 24px #8bff9b25;
+}
+
+.secondary-btn {
+  color: var(--green);
+  background: var(--panel-light);
+  border-color: var(--border);
+}
+
+.secondary-btn:hover {
+  border-color: var(--green);
+}
+
+/* COMMON LAYOUT */
+
+.section {
+  width: min(1120px, calc(100% - 32px));
+  margin: auto;
+  padding: 65px 0;
+  animation: appear .5s ease both;
+}
+
+.page-view {
+  display: none;
+}
+
+.page-view.page-active {
+  display: block;
+  animation: appear .4s ease both;
+}
+
+.eyebrow {
+  display: inline-block;
+  color: var(--green);
+  font-size: .75rem;
+  font-weight: 800;
+  letter-spacing: 2px;
+  margin-bottom: 12px;
+}
+
+.panel,
+.card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: 0 15px 45px #0002;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.panel {
+  padding: 25px;
+}
+
+.card {
+  padding: 24px;
+  transition: transform .25s, border-color .25s;
+}
+
+.card:hover,
+.panel:hover {
+  border-color: #426e50;
+}
+
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2,minmax(0,1fr));
+  gap: 20px;
+  margin-top: 24px;
+}
+
+.grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3,minmax(0,1fr));
+  gap: 20px;
+  margin-top: 24px;
+}
+
+.section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-bottom: 24px;
+}
+
+/* HOME */
+
+.hero {
+  width: min(1100px, calc(100% - 32px));
+  margin: auto;
+  padding: 95px 0 60px;
+  text-align: center;
+  animation: appear .7s ease both;
+}
+
+.hero h1 {
+  font-size: clamp(2.8rem, 7vw, 5.5rem);
+  font-weight: 900;
+  line-height: 1.08;
+  margin-bottom: 22px;
+}
+
+.hero h1 span {
+  color: var(--green);
+  text-shadow: 0 0 35px #8bff9b20;
+}
+
+.hero > p {
+  max-width: 680px;
+  margin: 0 auto 25px;
+  font-size: 1.05rem;
+}
+
+.hero-stats {
+  display: grid;
+  grid-template-columns: repeat(4,minmax(0,1fr));
+  gap: 16px;
+  margin-top: 35px;
+}
+
+.stat {
+  padding: 20px 12px;
+  text-align: center;
+}
+
+.stat-icon {
+  font-size: 1.8rem;
+}
+
+.stat h2 {
+  color: var(--green);
+  font-size: 1.8rem;
+  margin: 8px 0;
+}
+
+.stat p {
+  font-size: .85rem;
+}
+
+.impact-category-grid {
+  display: grid;
+  grid-template-columns: repeat(4,minmax(0,1fr));
+  gap: 15px;
+  margin: 24px 0;
+}
+
+.impact-category {
+  text-align: left;
+  padding: 21px;
+  color: var(--text);
+  background: linear-gradient(145deg,#122b20,#0a1b13);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+}
+
+.impact-category:hover,
+.impact-category.selected {
+  border-color: var(--green);
+  transform: translateY(-4px);
+}
+
+.category-icon {
+  display: block;
+  font-size: 2rem;
+  margin-bottom: 9px;
+}
+
+.impact-category strong,
+.impact-category small {
+  display: block;
+}
+
+.impact-category small {
+  color: var(--muted);
+  margin-top: 6px;
+  font-size: .8rem;
+}
+
+.impact-detail {
+  padding: 20px;
+  margin-bottom: 24px;
+  background: #112c1f;
+  border: 1px solid #31563d;
+  border-radius: 16px;
+}
+
+/* FORMS */
+
+label {
+  display: block;
+  color: var(--text);
+  font-size: .9rem;
+  margin: 12px 0 6px;
+}
+
+input,
+select {
+  width: 100%;
+  padding: 12px 14px;
+  color: var(--text);
+  background: #081810;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  margin-bottom: 10px;
+}
+
+input::placeholder {
+  color: #779383;
+}
+
+select option {
+  background: var(--panel-light);
+}
+
+.report-form {
+  display: grid;
+  grid-template-columns: repeat(2,minmax(0,1fr));
+  gap: 4px 15px;
+}
+
+.report-form button {
+  align-self: end;
+  margin-bottom: 10px;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.message-status {
+  min-height: 24px;
+  margin: 10px 0;
+  font-size: .9rem;
+}
+
+.report-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 0;
+  border-top: 1px solid var(--border);
+}
+
+.report-item strong {
+  color: var(--green);
+}
+
+.report-item small {
+  display: block;
+  color: var(--muted);
+}
+
+/* TRACKING BARS */
+
+.bar-row {
+  margin: 18px 0;
+}
+
+.bar-info {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 7px;
+  font-size: .9rem;
+}
+
+.bar-info strong {
+  color: var(--green);
+}
+
+.bar-track {
+  height: 9px;
+  overflow: hidden;
+  border-radius: 20px;
+  background: #1b3528;
+}
+
+.bar-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg,#2ecc71,#8bff9b);
+  transition: width .7s ease;
+}
+
+/* IMAGE TRACKER PAGE */
+
+.image-tracker-intro {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin: 24px 0;
+  background: linear-gradient(120deg,#102b1e,#0d2119);
+}
+
+.photo-scan-icon {
+  flex-shrink: 0;
+  font-size: 2.5rem;
+}
+
+.photo-sorter {
+  margin-top: 20px;
+  padding: clamp(18px,3vw,30px);
+}
+
+.photo-sorter-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+  align-items: center;
+  margin-bottom: 25px;
+}
+
+.photo-sorter-grid {
+  display: grid;
+  grid-template-columns: repeat(2,minmax(0,1fr));
+  gap: 22px;
+}
+
+.photo-upload-zone {
+  padding: 20px;
+  border: 1px dashed #467b55;
+  border-radius: 16px;
+  background: #0a1d14;
+}
+
+.photo-upload-label {
+  min-height: 130px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  border: 1px dashed #5a9b6a;
+  border-radius: 14px;
+  cursor: pointer;
+  text-align: center;
+  background: #10271b;
+}
+
+.photo-upload-label span {
+  font-size: 2rem;
+  color: var(--green);
+}
+
+.photo-upload-label small {
+  color: var(--muted);
+}
+
+.photo-preview {
+  display: block;
+  width: 100%;
+  max-height: 280px;
+  margin-top: 15px;
+  object-fit: contain;
+  border-radius: 12px;
+  background: #07130f;
+}
+
+#analyzePhotoBtn {
+  width: 100%;
+  margin-top: 15px;
+}
+
+.photo-help,
+.photo-disclaimer {
+  font-size: .8rem;
+  margin-top: 12px;
+}
+
+.photo-result {
+  min-height: 250px;
+  padding: 22px;
+  background: #0a1d14;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+}
+
+.photo-result-empty {
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  gap: 10px;
+}
+
+.photo-result-empty span {
+  font-size: 2.5rem;
+}
+
+.result-category {
+  display: inline-block;
+  padding: 5px 11px;
+  margin: 8px 0;
+  color: var(--green);
+  background: #163b26;
+  border: 1px solid #315c3d;
+  border-radius: 99px;
+  font-size: .8rem;
+}
+
+.photo-result ul {
+  margin: 12px 0 0 20px;
+  color: var(--muted);
+}
+
+.photo-result li {
+  margin: 6px 0;
+}
+
+.photo-disclaimer {
+  color: var(--muted);
+}
+
+/* CHALLENGES */
+
+.challenge {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.challenge-icon {
+  font-size: 2rem;
+}
+
+.challenge p {
+  font-size: .9rem;
+}
+
+.challenge-status {
+  color: var(--green);
+  font-size: .85rem;
+  margin-top: auto;
+}
+
+.challenge button {
+  width: 100%;
+  margin-top: 8px;
+}
+
+.challenge.completed {
+  border-color: var(--green-dark);
+  background: linear-gradient(145deg,#102a1d,#0d2119);
+}
+
+/* LEADERBOARD */
+
+.rank-row {
+  display: grid;
+  grid-template-columns: 45px 1fr auto;
+  align-items: center;
+  gap: 14px;
+  padding: 15px 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.rank-number,
+.rank-points {
+  color: var(--green);
+  font-weight: 800;
+}
+
+.rank-name {
+  font-weight: 700;
+}
+
+.rank-row small {
+  display: block;
+  color: var(--muted);
+  font-weight: 400;
+}
+
+/* LOCATION */
+
+.location-layout {
+  display: grid;
+  grid-template-columns: minmax(250px,.8fr) minmax(0,1.4fr);
+  gap: 20px;
+  margin-top: 24px;
+}
+
+.location-pin {
+  font-size: 2.3rem;
+}
+
+.coordinates {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px 15px;
+  padding: 16px 0;
+  margin: 20px 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.coordinates span {
+  color: var(--muted);
+}
+
+.coordinates strong {
+  color: var(--green);
+}
+
+.map-link {
+  margin-bottom: 15px;
+}
+
+.map-panel {
+  min-height: 400px;
+  padding: 8px;
+  overflow: hidden;
+}
+
+.map-panel iframe {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 400px;
+  border: 0;
+  border-radius: 12px;
+}
+
+/* CHATBOT: NEW VIOLET THEME AND LARGER SIZE */
+
+.chat-launcher {
+  position: fixed;
+  right: 25px;
+  bottom: 25px;
+  z-index: 1000;
+  width: 66px;
+  height: 66px;
+  border: 1px solid #c4b5fd;
+  border-radius: 50%;
+  background: linear-gradient(135deg,var(--ai-primary),var(--ai-secondary));
+  color: white;
+  font-size: 1.8rem;
+  box-shadow: 0 8px 35px #8b5cf655;
+  animation: pulse 2.5s infinite;
+}
+
+.chat-launcher:hover {
+  box-shadow: 0 8px 40px #8b5cf688;
+}
+
+.chat {
+  position: fixed;
+  right: 25px;
+  bottom: 105px;
+  z-index: 999;
+  width: min(460px,calc(100vw - 30px));
+  height: min(660px,calc(100dvh - 130px));
+  min-height: 420px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 0;
+  border: 1px solid var(--ai-border);
+  border-radius: 22px;
+  background: rgba(15,14,32,.96);
+  box-shadow: 0 20px 70px #0008,0 0 35px #8b5cf622;
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  animation: chatIn .25s ease;
+}
+
+.chat.hidden {
+  display: none !important;
+}
+
+.chat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 20px;
+  color: white;
+  background: linear-gradient(125deg,#6d28d9,#4f46e5);
+  border-bottom: 1px solid var(--ai-border);
+}
+
+.chat-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ai-avatar {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  flex-shrink: 0;
+  border: 1px solid #ffffff55;
+  border-radius: 15px;
+  background: #ffffff20;
+  font-size: 1.5rem;
+}
+
+.chat-header b {
+  display: block;
+  font-size: 1.05rem;
+}
+
+.chat-header small {
+  display: block;
+  color: #e0e7ff;
+  font-size: .78rem;
+}
+
+.chat-header .icon-btn {
+  padding: 7px 11px;
+  border: 1px solid #ffffff55;
+  border-radius: 9px;
+  background: #ffffff16;
+  color: white;
+  font-size: 1.1rem;
+}
+
+.quick-prompts {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 13px;
+  border-bottom: 1px solid #ffffff10;
+}
+
+.quick-prompts button {
+  flex-shrink: 0;
+  padding: 8px 11px;
+  color: #e9e5ff;
+  background: #262044;
+  border: 1px solid var(--ai-border);
+  border-radius: 10px;
+  font-size: .78rem;
+}
+
+.quick-prompts button:hover {
+  background: #3b2e70;
+  border-color: var(--ai-light);
+}
+
+.chat-messages {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  overflow-y: auto;
+  padding: 18px;
+  scrollbar-width: thin;
+  scrollbar-color: #51417f transparent;
+}
+
+.message {
+  max-width: 88%;
+  padding: 13px 15px;
+  border-radius: 15px;
+  font-size: .94rem;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.message.bot {
+  align-self: flex-start;
+  color: #f2efff;
+  background: #211d3b;
+  border: 1px solid #423568;
+  border-bottom-left-radius: 5px;
+}
+
+.message.user {
+  align-self: flex-end;
+  color: white;
+  background: linear-gradient(135deg,#7c3aed,#6366f1);
+  border: 1px solid #a78bfa;
+  border-bottom-right-radius: 5px;
+}
+
+.chat-input {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px;
+  background: #131128;
+  border-top: 1px solid var(--ai-border);
+}
+
+.chat-input input {
+  min-width: 0;
+  flex: 1;
+  margin: 0;
+  padding: 13px 14px;
+  color: white;
+  background: #201b38;
+  border: 1px solid #51417f;
+  border-radius: 12px;
+}
+
+.chat-input input:focus {
+  outline: 2px solid #8b5cf6;
+  border-color: #a78bfa;
+}
+
+.chat-input input::placeholder {
+  color: #b0a9ce;
+}
+
+.chat-input button {
+  min-width: 48px;
+  padding: 12px 15px;
+  border: 0;
+  border-radius: 12px;
+  background: linear-gradient(135deg,#8b5cf6,#6366f1);
+  color: white;
+  font-weight: 800;
+}
+
+.chat-disclaimer {
+  padding: 0 12px 12px;
+  color: #a8a2c6;
+  background: #131128;
+  text-align: center;
+  font-size: .72rem;
+}
+
+/* FOOTER */
+
+footer {
+  padding: 40px 20px;
+  margin-top: 35px;
+  text-align: center;
+  border-top: 1px solid var(--border);
+}
+
+footer p {
+  font-size: .85rem;
+}
+
+@media (max-width: 900px) {
+  .navbar {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  nav {
+    order: 3;
+    width: 100%;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+    gap: 15px;
+  }
+
+  .impact-category-grid {
+    grid-template-columns: repeat(2,minmax(0,1fr));
+  }
+
+  .grid-3 {
+    grid-template-columns: repeat(2,minmax(0,1fr));
+  }
+
+  .location-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 560px) {
+  .navbar {
+    width: calc(100% - 16px);
+    padding: 12px;
+  }
+
+  nav {
+    gap: 12px;
+  }
+
+  .nav-link {
+    font-size: .77rem;
+  }
+
+  .hero {
+    padding-top: 60px;
+  }
+
+  .hero-stats {
+    grid-template-columns: repeat(2,minmax(0,1fr));
+  }
+
+  .impact-category-grid,
+  .grid-2,
+  .grid-3,
+  .photo-sorter-grid,
+  .report-form {
+    grid-template-columns: 1fr;
+  }
+
+  .section {
+    width: calc(100% - 24px);
+    padding: 42px 0;
+  }
+
+  .panel {
+    padding: 18px;
+  }
+
+  .chat {
+    right: 10px;
+    bottom: 86px;
+    width: calc(100vw - 20px);
+    height: min(620px,calc(100dvh - 105px));
+    min-height: 360px;
+  }
+
+  .chat-launcher {
+    right: 15px;
+    bottom: 15px;
+    width: 58px;
+    height: 58px;
+  }
+
+  .chat-header {
+    padding: 14px;
+  }
+
+  .chat-messages {
+    padding: 13px;
+  }
+
+  .message {
+    max-width: 94%;
+    font-size: .9rem;
+  }
+
+  .image-tracker-intro {
+    align-items: flex-start;
+  }
+
+  .photo-sorter-heading {
+    align-items: flex-start;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,*::before,*::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+</style>
+</head>
+
+<body>
+<div class="bubble one"></div>
+<div class="bubble two"></div>
+
+<header class="navbar">
+  <a class="brand" href="#" onclick="showPage('impact');return false;">🌿 EcoCampus</a>
+
+  <nav aria-label="Main navigation">
+    <a class="nav-link active" href="#impact" data-page="impact" onclick="showPage('impact');return false;">Impact</a>
+    <a class="nav-link" href="#tracking" data-page="tracking" onclick="showPage('tracking');return false;">Tracking</a>
+    <a class="nav-link" href="#image-tracker" data-page="image-tracker" onclick="showPage('image-tracker');return false;">Image Tracker</a>
+    <a class="nav-link" href="#location-page" data-page="location-page" onclick="showPage('location-page');return false;">Location</a>
+    <a class="nav-link" href="#challenges" data-page="challenges" onclick="showPage('challenges');return false;">Challenges</a>
+    <a class="nav-link" href="#leaderboard" data-page="leaderboard" onclick="showPage('leaderboard');return false;">Leaderboard</a>
+  </nav>
+
+  <button class="primary-btn" onclick="openChat()">Ask LEEF ✨</button>
+</header>
+
+<main>
+  <!-- IMPACT PAGE -->
+  <section class="page-view page-active" id="impact">
+    <div class="hero">
+      <span class="eyebrow">SMART CAMPUS. GREENER FUTURE.</span>
+      <h1>Technology for a <span>Greener</span> Campus.</h1>
+      <p>
+        EcoCampus helps students track waste, understand environmental impact,
+        take sustainable actions and build a cleaner campus.
+      </p>
+      <button class="primary-btn" onclick="showPage('image-tracker')">📸 Track Waste with a Photo</button>
+
+      <div class="hero-stats">
+        <div class="panel stat">
+          <span class="stat-icon">♻️</span>
+          <h2 id="heroReports">0</h2>
+          <p>Waste reports</p>
+        </div>
+        <div class="panel stat">
+          <span class="stat-icon">🌱</span>
+          <h2 id="heroChallenges">0</h2>
+          <p>Eco actions</p>
+        </div>
+        <div class="panel stat">
+          <span class="stat-icon">🏆</span>
+          <h2 id="heroPoints">0</h2>
+          <p>Eco points</p>
+        </div>
+        <div class="panel stat">
+          <span class="stat-icon">📷</span>
+          <h2>AI</h2>
+          <p>Photo waste helper</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <span class="eyebrow">OUR CAMPUS IMPACT</span>
+      <h2>Every Resource Counts.</h2>
+      <p>Select a category to explore its environmental impact and a simple action you can take.</p>
+
+      <div class="impact-category-grid">
+        <button class="impact-category selected" onclick="selectImpact('food',this)">
+          <span class="category-icon">🍱</span>
+          <strong>Food Waste</strong>
+          <small>Reduce leftovers and wasted resources.</small>
+        </button>
+        <button class="impact-category" onclick="selectImpact('solid',this)">
+          <span class="category-icon">♻️</span>
+          <strong>Solid Waste</strong>
+          <small>Sort, reuse and recycle materials.</small>
+        </button>
+        <button class="impact-category" onclick="selectImpact('water',this)">
+          <span class="category-icon">💧</span>
+          <strong>Water Waste</strong>
+          <small>Save clean water and prevent leaks.</small>
+        </button>
+        <button class="impact-category" onclick="selectImpact('energy',this)">
+          <span class="category-icon">⚡</span>
+          <strong>Energy Waste</strong>
+          <small>Reduce unnecessary electricity use.</small>
+        </button>
+      </div>
+
+      <div class="impact-detail" id="impactDetail">
+        <h3>🍱 Food Waste</h3>
+        <p>Uneaten food wastes the water, energy and effort used to grow and prepare it. Take only what you can finish and record leftovers.</p>
+      </div>
+
+      <div class="grid-3">
+        <div class="panel card">
+          <span class="stat-icon">🌱</span>
+          <h3>Eco Actions</h3>
+          <h2 id="actionCount">0</h2>
+          <p>Challenges completed by you.</p>
+        </div>
+        <div class="panel card">
+          <span class="stat-icon">📊</span>
+          <h3>Reports Submitted</h3>
+          <h2 id="reportCount">0</h2>
+          <p>Waste incidents recorded.</p>
+        </div>
+        <div class="panel card">
+          <span class="stat-icon">🏆</span>
+          <h3>Your Eco Points</h3>
+          <h2 id="points">0</h2>
+          <p>Points earned from challenges.</p>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="panel">
+          <h3>Record a Waste Report</h3>
+          <p>Enter the details of a waste incident on campus.</p>
+
+          <form id="reportForm" class="report-form">
+            <div>
+              <label for="wasteType">Waste category</label>
+              <select id="wasteType" required>
+                <option value="Food">Food waste</option>
+                <option value="Solid">Solid waste</option>
+                <option value="Water">Water waste</option>
+                <option value="Energy">Energy waste</option>
+              </select>
+            </div>
+            <div>
+              <label for="wasteAmount">Quantity</label>
+              <input id="wasteAmount" type="number" min="0.1" step="0.1" placeholder="e.g. 2" required>
+            </div>
+            <div>
+              <label for="wasteUnit">Unit</label>
+              <select id="wasteUnit">
+                <option value="kg">Kilograms (kg)</option>
+                <option value="litres">Litres</option>
+                <option value="kWh">Kilowatt-hours (kWh)</option>
+                <option value="items">Items</option>
+              </select>
+            </div>
+            <div>
+              <label for="wastePlace">Location</label>
+              <input id="wastePlace" type="text" placeholder="e.g. Canteen">
+            </div>
+            <button class="primary-btn" type="submit">Save Report +</button>
+          </form>
+
+          <p id="reportMessage" class="message-status" role="status"></p>
+          <div id="reportList"></div>
+        </div>
+
+        <div class="panel">
+          <h3>Waste Distribution</h3>
+          <p>Based on reports saved in this browser.</p>
+          <div id="wasteBars"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TRACKING PAGE -->
+  <section class="section page-view" id="tracking">
+    <span class="eyebrow">YOUR CAMPUS RECORDS</span>
+    <h2>Waste Tracking Centre 📈</h2>
+    <p>Review your reports and eco challenges. Data is stored locally in this browser.</p>
+
+    <div class="grid-3">
+      <div class="panel card">
+        <span class="stat-icon">📝</span>
+        <p>Total reports</p>
+        <h2 id="trackingReportCount">0</h2>
+      </div>
+      <div class="panel card">
+        <span class="stat-icon">🌱</span>
+        <p>Challenges completed</p>
+        <h2 id="trackingChallengeCount">0</h2>
+      </div>
+      <div class="panel card">
+        <span class="stat-icon">🏆</span>
+        <p>Eco points earned</p>
+        <h2 id="trackingPoints">0</h2>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-top:24px">
+      <div class="section-heading">
+        <div>
+          <h3>Category totals</h3>
+          <p>Quantities are grouped by waste category.</p>
+        </div>
+        <span style="color:var(--green)">● Local tracking</span>
+      </div>
+      <div id="trackingBars"></div>
+    </div>
+
+    <div class="panel" style="margin-top:24px">
+      <div class="section-heading">
+        <div>
+          <h3>Recent activity</h3>
+          <p>Waste reports saved on this device.</p>
+        </div>
+        <button class="secondary-btn" onclick="exportTrackingCSV()">Export CSV ↓</button>
+      </div>
+      <div id="trackingActivity"></div>
+      <p style="margin-top:18px;font-size:.84rem">
+        Your reports stay in this browser and are not automatically shared with campus management.
+      </p>
+      <button class="secondary-btn" style="margin-top:14px" onclick="clearTrackingData()">Clear my tracking data</button>
+    </div>
+  </section>
+
+  <!-- NEW IMAGE TRACKER PAGE -->
+  <section class="section page-view" id="image-tracker">
+    <span class="eyebrow">SMART WASTE IDENTIFIER</span>
+    <h2>Image Waste Tracker 📸</h2>
+    <p>Upload a photo or use your camera to receive a suggested waste category and disposal guidance.</p>
+
+    <div class="image-tracker-intro panel">
+      <span class="photo-scan-icon">♻️</span>
+      <div>
+        <h3>Snap it. Sort it. Dispose right.</h3>
+        <p>For better results, photograph one item clearly against a plain background. Always check your campus waste rules.</p>
+      </div>
+    </div>
+
+    <div class="panel photo-sorter">
+      <div class="photo-sorter-heading">
+        <div>
+          <span class="eyebrow">PHOTO ANALYSIS</span>
+          <h3>Identify your waste</h3>
+          <p>Select an image from your device or take a new photo.</p>
+        </div>
+        <span class="photo-scan-icon">📷</span>
+      </div>
+
+      <div class="photo-sorter-grid">
+        <div class="photo-upload-zone">
+          <input id="wastePhoto" type="file" accept="image/*" capture="environment" class="hidden" onchange="previewWastePhoto(event)">
+          <label for="wastePhoto" class="photo-upload-label">
+            <span>＋</span>
+            <strong>Choose or take a photo</strong>
+            <small>JPG, PNG, WEBP</small>
+          </label>
+
+          <img id="wastePhotoPreview" class="photo-preview hidden" alt="Selected waste item preview">
+
+          <button id="analyzePhotoBtn" class="primary-btn" type="button" onclick="analyzeWastePhoto()" disabled>
+            Identify Waste ✨
+          </button>
+
+          <p class="photo-help" id="photoStatus" role="status">Choose a photo to begin.</p>
+        </div>
+
+        <div class="photo-result" id="photoResult" aria-live="polite">
+          <div class="photo-result-empty">
+            <span>🔎</span>
+            <strong>Your result will appear here</strong>
+            <p>EcoCampus will suggest a category and disposal method.</p>
+          </div>
+        </div>
+      </div>
+
+      <p class="photo-disclaimer">
+        Photo identification is a best-effort demonstration, not a guaranteed diagnosis of material type.
+        Check local recycling rules before disposal.
+      </p>
+    </div>
+  </section>
+
+  <!-- LOCATION PAGE -->
+  <section class="section page-view" id="location-page">
+    <span class="eyebrow">CAMPUS LOCATION</span>
+    <h2>Find EcoCampus 📍</h2>
+    <p>Campus map and directions for Shri Vaishnav Vidyapeeth Vishwavidyalaya (SVVV), Indore.</p>
+
+    <div class="location-layout">
+      <div class="panel">
+        <span class="location-pin">📍</span>
+        <h3>Shri Vaishnav Vidyapeeth Vishwavidyalaya</h3>
+        <p>Indore, Madhya Pradesh, India</p>
+
+        <div class="coordinates">
+          <span>Latitude</span><strong>22.824693</strong>
+          <span>Longitude</span><strong>75.849627</strong>
+        </div>
+
+        <a class="primary-btn map-link"
+           href="https://www.google.com/maps/place/Shri+Vaishnav+Vidyapeeth+Vishwavidyalaya+(SVVV)/@22.8244632,75.8472454,16.91z/"
+           target="_blank" rel="noopener noreferrer">
+          Open Google Maps ↗
+        </a>
+
+        <p style="font-size:.84rem;margin-top:12px">
+          This page shows the campus location; it does not continuously track your personal location.
+        </p>
+      </div>
+
+      <div class="panel map-panel">
+        <iframe
+          title="SVVV campus map"
+          src="https://maps.google.com/maps?q=22.824693,75.849627&z=16&output=embed"
+          loading="lazy"
+          allowfullscreen>
+        </iframe>
+      </div>
+    </div>
+  </section>
+
+  <!-- CHALLENGES PAGE -->
+  <section class="section page-view" id="challenges">
+    <span class="eyebrow">TAKE ACTION</span>
+    <h2>LEEF Eco Challenges 🌿</h2>
+    <p>Complete simple missions to build greener campus habits and earn eco points.</p>
+    <div class="grid-3" id="challengeList"></div>
+  </section>
+
+  <!-- LEADERBOARD PAGE -->
+  <section class="section page-view" id="leaderboard">
+    <span class="eyebrow">CAMPUS ECO CHAMPIONS</span>
+    <h2>Friendly Competition. Real Change.</h2>
+
+    <div class="panel">
+      <div class="section-heading">
+        <div>
+          <h3>Eco Leaderboard</h3>
+          <p>Demo participants are illustrative; your points come from completed challenges.</p>
+        </div>
+        <select id="rankFilter" style="max-width:170px" onchange="renderLeaderboard()">
+          <option value="weekly">This week</option>
+          <option value="monthly">This month</option>
+          <option value="all">All time</option>
+        </select>
+      </div>
+      <div id="leaderboardList"></div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="panel" style="text-align:center;padding:45px 20px">
+      <span class="eyebrow">YOUR CAMPUS. YOUR PLANET.</span>
+      <h2>Make Sustainability a Habit.</h2>
+      <p style="max-width:600px;margin:14px auto 22px">
+        Ask LEEF how to prevent waste, save resources and make greener choices.
+      </p>
+      <button class="primary-btn" onclick="openChat()">Chat with LEEF ✨</button>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <p>🌿 EcoCampus — Smart Sustainability for a Greener Tomorrow.</p>
+</footer>
+
+<!-- LEEF AI FLOATING BUTTON -->
+<button class="chat-launcher" id="chatLauncher" onclick="toggleChat()" aria-label="Open LEEF AI chat">
+  ✨
+</button>
+
+<!-- LEEF AI CHATBOX -->
+<div class="chat panel hidden" id="chatBox" role="dialog" aria-label="LEEF AI chat">
+  <div class="chat-header">
+    <div class="chat-brand">
+      <div class="ai-avatar">🌿</div>
+      <div>
+        <b>LEEF AI Assistant</b>
+        <small>EcoCampus sustainability guide</small>
+      </div>
+    </div>
+    <button class="icon-btn" onclick="toggleChat()" aria-label="Close chat">✕</button>
+  </div>
+
+  <div class="quick-prompts">
+    <button onclick="sendQuick('How can I reduce waste?')">Reduce waste</button>
+    <button onclick="sendQuick('How do I save water?')">Save water</button>
+    <button onclick="sendQuick('How do I sort plastic?')">Sort plastic</button>
+    <button onclick="sendQuick('Give me an eco challenge')">Eco challenge</button>
+  </div>
+
+  <div class="chat-messages" id="chatMessages" aria-live="polite">
+    <div class="message bot">
+      Hi! 🌿 I'm LEEF, your EcoCampus assistant. Ask me about recycling, food waste, saving water or making your campus greener.
+    </div>
+  </div>
+
+  <form class="chat-input" id="chatForm">
+    <input id="chatText" type="text" placeholder="Ask LEEF something..." autocomplete="off" required>
+    <button type="submit" aria-label="Send message">➤</button>
+  </form>
+  <small class="chat-disclaimer">LEEF provides general sustainability tips.</small>
+</div>
+
+<!-- TensorFlow.js MobileNet image model -->
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.17.0/dist/tf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@2.1.1/dist/mobilenet.min.js"></script>
+
+<script>
+/* NAVIGATION */
+function showPage(pageId) {
+  document.querySelectorAll(".page-view").forEach(page => {
+    page.classList.toggle("page-active", page.id === pageId);
+  });
+
+  document.querySelectorAll(".nav-link").forEach(link => {
+    link.classList.toggle("active", link.dataset.page === pageId);
+  });
+
+  window.scrollTo({ top: 0, behavior: "smooth" });
+
+  if (pageId === "tracking") renderTracking();
+  if (pageId === "leaderboard") renderLeaderboard();
+}
+
+/* IMPACT CARDS */
+const impactContent = {
+  food: {
+    title: "🍱 Food Waste",
+    text: "Uneaten food wastes water, energy and effort used to grow, transport and prepare it. Take only what you can finish and record leftovers."
+  },
+  solid: {
+    title: "♻️ Solid Waste",
+    text: "Plastic, paper, cans and packaging can pollute campus spaces. Separate recyclable materials, reuse items and keep waste out of drains."
+  },
+  water: {
+    title: "💧 Water Waste",
+    text: "Leaking taps and unnecessary water use waste a valuable resource. Turn taps off properly and report leaks to campus maintenance."
+  },
+  energy: {
+    title: "⚡ Energy Waste",
+    text: "Unused lights, fans and equipment consume electricity. Switch off devices when rooms are empty and use natural light when possible."
+  }
+};
+
+function selectImpact(type, button) {
+  document.querySelectorAll(".impact-category").forEach(item => item.classList.remove("selected"));
+  if (button) button.classList.add("selected");
+
+  const data = impactContent[type];
+  document.getElementById("impactDetail").innerHTML =
+    `<h3>${data.title}</h3><p>${data.text}</p>`;
+}
+
+/* LOCAL STORAGE */
+function readStorage(key, fallback) {
+  try {
+    const value = localStorage.getItem(key);
+    return value ? JSON.parse(value) : fallback;
+  } catch (error) {
+    return fallback;
+  }
+}
+
+function writeStorage(key, value) {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch (error) {
+    console.warn("Local storage is unavailable.", error);
+  }
+}
+
+let reports = readStorage("ecocampus_reports", []);
+let completedChallenges = readStorage("ecocampus_completed", []);
+let ecoPoints = Number(readStorage("ecocampus_points", 0)) || 0;
+
+const wasteCategories = ["Food", "Solid", "Water", "Energy"];
+
+function saveData() {
+  writeStorage("ecocampus_reports", reports);
+  writeStorage("ecocampus_completed", completedChallenges);
+  writeStorage("ecocampus_points", ecoPoints);
+}
+
+/* REPORT FORM */
+document.getElementById("reportForm").addEventListener("submit", function(event) {
+  event.preventDefault();
+
+  const category = document.getElementById("wasteType").value;
+  const amount = Number(document.getElementById("wasteAmount").value);
+  const unit = document.getElementById("wasteUnit").value;
+  const location = document.getElementById("wastePlace").value.trim() || "Campus";
+
+  if (!Number.isFinite(amount) || amount <= 0) {
+    document.getElementById("reportMessage").textContent = "Enter a quantity greater than zero.";
+    return;
+  }
+
+  reports.unshift({
+    id: Date.now(),
+    category,
+    amount,
+    unit,
+    location,
+    date: new Date().toISOString()
+  });
+
+  saveData();
+  this.reset();
+
+  document.getElementById("reportMessage").textContent = "Report saved successfully! 🌱";
+  renderAll();
+});
+
+/* REPORT RENDERING */
+function renderReports() {
+  const list = document.getElementById("reportList");
+
+  if (!reports.length) {
+    list.innerHTML = "<p>No reports submitted yet.</p>";
+    return;
+  }
+
+  list.innerHTML = reports.slice(0, 5).map(report => `
+    <div class="report-item">
+      <div>
+        <strong>${escapeHTML(report.category)} waste</strong>
+        <small>${escapeHTML(report.location)} · ${new Date(report.date).toLocaleDateString()}</small>
+      </div>
+      <b>${Number(report.amount)} ${escapeHTML(report.unit)}</b>
+    </div>
+  `).join("");
+}
+
+function escapeHTML(value) {
+  return String(value).replace(/[&<>"']/g, character => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+  })[character]);
+}
+
+function categoryTotals() {
+  const totals = {};
+  wasteCategories.forEach(category => totals[category] = 0);
+
+  reports.forEach(report => {
+    if (totals[report.category] !== undefined) {
+      totals[report.category] += Number(report.amount) || 0;
+    }
+  });
+
+  return totals;
+}
+
+function renderWasteBars(containerId) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  const totals = categoryTotals();
+  const max = Math.max(...Object.values(totals), 1);
+  const icons = { Food: "🍱", Solid: "♻️", Water: "💧", Energy: "⚡" };
+
+  container.innerHTML = wasteCategories.map(category => `
+    <div class="bar-row">
+      <div class="bar-info">
+        <span>${icons[category]} ${category}</span>
+        <strong>${totals[category].toFixed(1)}</strong>
+      </div>
+      <div class="bar-track">
+        <div class="bar-fill" style="width:${Math.min(100,totals[category] / max * 100)}%"></div>
+      </div>
+    </div>
+  `).join("");
+}
+
+/* TRACKING PAGE */
+function renderTracking() {
+  document.getElementById("trackingReportCount").textContent = reports.length;
+  document.getElementById("trackingChallengeCount").textContent = completedChallenges.length;
+  document.getElementById("trackingPoints").textContent = ecoPoints;
+
+  renderWasteBars("trackingBars");
+
+  const activity = document.getElementById("trackingActivity");
+
+  if (!reports.length) {
+    activity.innerHTML = "<p>No activity yet. Submit a waste report to start tracking.</p>";
+    return;
+  }
+
+  activity.innerHTML = reports.slice(0, 20).map(report => `
+    <div class="report-item">
+      <div>
+        <strong>${escapeHTML(report.category)} waste</strong>
+        <small>${escapeHTML(report.location)} · ${new Date(report.date).toLocaleString()}</small>
+      </div>
+      <b>${Number(report.amount)} ${escapeHTML(report.unit)}</b>
+    </div>
+  `).join("");
+}
+
+function exportTrackingCSV() {
+  if (!reports.length) {
+    alert("There are no reports to export yet.");
+    return;
+  }
+
+  const rows = [
+    ["Category", "Amount", "Unit", "Location", "Date"],
+    ...reports.map(report => [
+      report.category,
+      report.amount,
+      report.unit,
+      report.location,
+      report.date
+    ])
+  ];
+
+  const csv = rows.map(row =>
+    row.map(value => `"${String(value).replace(/"/g, '""')}"`).join(",")
+  ).join("\r\n");
+
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = "ecocampus-tracking.csv";
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
+function clearTrackingData() {
+  if (!confirm("Delete all waste reports, completed challenges and eco points from this browser?")) return;
+
+  reports = [];
+  completedChallenges = [];
+  ecoPoints = 0;
+  saveData();
+  renderAll();
+}
+
+/* CHALLENGES */
+const challenges = [
+  {
+    id: "bottle",
+    icon: "🚰",
+    title: "Reusable Bottle Day",
+    description: "Carry a reusable bottle instead of buying a single-use plastic bottle.",
+    points: 20
+  },
+  {
+    id: "lights",
+    icon: "💡",
+    title: "Switch Off to Save",
+    description: "Switch off unnecessary lights, fans and equipment before leaving a room.",
+    points: 15
+  },
+  {
+    id: "waste",
+    icon: "♻️",
+    title: "Sort Your Waste",
+    description: "Put recyclable items and general waste into the appropriate bins.",
+    points: 20
+  },
+  {
+    id: "water",
+    icon: "💧",
+    title: "Save Every Drop",
+    description: "Check taps for leaks and avoid leaving water running unnecessarily.",
+    points: 15
+  },
+  {
+    id: "food",
+    icon: "🍱",
+    title: "Clean Plate Challenge",
+    description: "Take a reasonable portion and avoid wasting food at your next meal.",
+    points: 25
+  },
+  {
+    id: "cleanup",
+    icon: "🌿",
+    title: "Campus Clean-Up",
+    description: "Safely pick up litter in an appropriate area and dispose of it correctly.",
+    points: 30
+  }
+];
+
+function renderChallenges() {
+  const container = document.getElementById("challengeList");
+
+  container.innerHTML = challenges.map(challenge => {
+    const completed = completedChallenges.includes(challenge.id);
+
+    return `
+      <div class="panel card challenge ${completed ? "completed" : ""}">
+        <span class="challenge-icon">${challenge.icon}</span>
+        <h3>${challenge.title}</h3>
+        <p>${challenge.description}</p>
+        <div class="challenge-status">${completed ? "✓ Completed" : `+${challenge.points} eco points`}</div>
+        <button class="${completed ? "secondary-btn" : "primary-btn"}"
+          ${completed ? "disabled" : ""}
+          onclick="completeChallenge('${challenge.id}')">
+          ${completed ? "Completed ✓" : "Complete challenge"}
+        </button>
+      </div>
+    `;
+  }).join("");
+}
+
+function completeChallenge(id) {
+  const challenge = challenges.find(item => item.id === id);
+
+  if (!challenge || completedChallenges.includes(id)) return;
+
+  completedChallenges.push(id);
+  ecoPoints += challenge.points;
+
+  saveData();
+  renderAll();
+}
+
+function renderLeaderboard() {
+  const demoUsers = [
+    { name: "Eco Warrior", points: 180 },
+    { name: "Green Guardian", points: 150 },
+    { name: "Nature Lover", points: 120 },
+    { name: "Campus Recycler", points: 95 }
+  ];
+
+  const players = [
+    ...demoUsers,
+    { name: "You", points: ecoPoints, isYou: true }
+  ].sort((a, b) => b.points - a.points);
+
+  document.getElementById("leaderboardList").innerHTML = players.map((player, index) => `
+    <div class="rank-row">
+      <div class="rank-number">${index === 0 ? "🥇" : index === 1 ? "🥈" : index === 2 ? "🥉" : index + 1}</div>
+      <div class="rank-name">${escapeHTML(player.name)}${player.isYou ? " (You)" : ""}
+        <small>${player.isYou ? "Your local score" : "Demo participant"}</small>
+      </div>
+      <div class="rank-points">${player.points} pts</div>
+    </div>
+  `).join("");
+}
+
+/* PHOTO TRACKER */
+let selectedPhoto = null;
+let mobileNetModel = null;
+
+function previewWastePhoto(event) {
+  const file = event.target.files && event.target.files[0];
+  if (!file) return;
+
+  if (!file.type.startsWith("image/")) {
+    document.getElementById("photoStatus").textContent = "Please choose a valid image file.";
+    return;
+  }
+
+  selectedPhoto = file;
+
+  const preview = document.getElementById("wastePhotoPreview");
+  preview.src = URL.createObjectURL(file);
+  preview.classList.remove("hidden");
+
+  document.getElementById("analyzePhotoBtn").disabled = false;
+  document.getElementById("photoStatus").textContent = "Photo ready. Click Identify Waste to continue.";
+
+  document.getElementById("photoResult").innerHTML = `
+    <div class="photo-result-empty">
+      <span>✨</span>
+      <strong>Ready to analyse</strong>
+      <p>Click the Identify Waste button when you're ready.</p>
+    </div>
+  `;
+}
+
+function getDisposalAdvice(category) {
+  const advice = {
+    Food: {
+      icon: "🍱",
+      title: "Food / Organic Waste",
+      steps: [
+        "Place food scraps in the designated organic waste bin.",
+        "Keep food waste separate from clean recyclable materials.",
+        "Follow campus rules for composting."
+      ]
+    },
+    Plastic: {
+      icon: "♻️",
+      title: "Plastic Waste",
+      steps: [
+        "Empty and rinse the container if appropriate.",
+        "Separate recyclable plastic from mixed or contaminated waste.",
+        "Use the campus plastic recycling bin if available."
+      ]
+    },
+    Paper: {
+      icon: "📄",
+      title: "Paper / Cardboard",
+      steps: [
+        "Keep paper dry and clean.",
+        "Flatten cardboard to save space.",
+        "Place it in the paper recycling stream."
+      ]
+    },
+    Glass: {
+      icon: "🍾",
+      title: "Glass Waste",
+      steps: [
+        "Handle broken glass carefully; do not pick it up with bare hands.",
+        "Use a designated glass collection container if provided.",
+        "Follow campus safety procedures."
+      ]
+    },
+    Metal: {
+      icon: "🥫",
+      title: "Metal Waste",
+      steps: [
+        "Empty the container before disposal.",
+        "Rinse food residue where practical.",
+        "Place it in the appropriate metal recycling bin."
+      ]
+    },
+    Electronic: {
+      icon: "🔋",
+      title: "Electronic Waste",
+      steps: [
+        "Do not place batteries or electronics in regular waste bins.",
+        "Use an authorised e-waste collection point.",
+        "Do not dismantle batteries or damaged electronics."
+      ]
+    },
+    General: {
+      icon: "🗑️",
+      title: "General / Mixed Waste",
+      steps: [
+        "Check whether the item can be reused or recycled first.",
+        "Separate hazardous, electronic and sanitary waste.",
+        "Use the designated general waste bin if no recycling stream applies."
+      ]
+    }
+  };
+
+  return advice[category] || advice.General;
+}
+
+function classifyLabel(label) {
+  const text = label.toLowerCase();
+
+  if (/banana|apple|orange|lemon|broccoli|cabbage|food|pizza|sandwich|fruit|vegetable|potato/.test(text)) {
+    return "Food";
+  }
+
+  if (/plastic|water bottle|pop bottle|plastic bag|container|carton/.test(text)) {
+    return "Plastic";
+  }
+
+  if (/paper|envelope|book|newspaper|cardboard|menu/.test(text)) {
+    return "Paper";
+  }
+
+  if (/beer glass|wine bottle|jar|glass bottle|goblet/.test(text)) {
+    return "Glass";
+  }
+
+  if (/can opener|tin can|chain|screw|hammer|metal|steel/.test(text)) {
+    return "Metal";
+  }
+
+  if (/computer|keyboard|mouse|cellular telephone|mobile phone|remote control|battery|laptop|monitor/.test(text)) {
+    return "Electronic";
+  }
+
+  return "General";
+}
+
+async function analyzeWastePhoto() {
+  if (!selectedPhoto) return;
+
+  const button = document.getElementById("analyzePhotoBtn");
+  const status = document.getElementById("photoStatus");
+  const result = document.getElementById("photoResult");
+  const preview = document.getElementById("wastePhotoPreview");
+
+  button.disabled = true;
+  status.textContent = "Analysing image... Please wait.";
+  result.innerHTML = "<p>🔎 Analysing your photo...</p>";
+
+  try {
+    if (typeof mobilenet === "undefined") {
+      throw new Error("The image model could not load. Check your internet connection and try again.");
+    }
+
+    if (!mobileNetModel) {
+      mobileNetModel = await mobilenet.load();
+    }
+
+    const predictions = await mobileNetModel.classify(preview);
+    const bestPrediction = predictions[0];
+    const category = classifyLabel(bestPrediction.className);
+    const advice = getDisposalAdvice(category);
+    const confidence = Math.round((bestPrediction.probability || 0) * 100);
+
+    result.innerHTML = `
+      <span style="font-size:2.3rem">${advice.icon}</span>
+      <h3>${advice.title}</h3>
+      <span class="result-category">Suggested category: ${category}</span>
+      <p><strong>Model label:</strong> ${escapeHTML(bestPrediction.className)}</p>
+      <p><strong>Model confidence:</strong> ${confidence}% for the label (not guaranteed waste-category accuracy).</p>
+      <h3 style="margin-top:18px">Disposal suggestions</h3>
+      <ul>${advice.steps.map(step => `<li>${step}</li>`).join("")}</ul>
+      <p style="margin-top:14px;font-size:.8rem">Please verify the result yourself and follow campus disposal rules.</p>
+    `;
+
+    status.textContent = "Analysis complete. Please verify the suggested category.";
+  } catch (error) {
+    result.innerHTML = `
+      <div class="photo-result-empty">
+        <span>⚠️</span>
+        <strong>Unable to analyse this image</strong>
+        <p>${escapeHTML(error.message || "Please try again.")}</p>
+        <p>Make sure you're connected to the internet and try again.</p>
+      </div>
+    `;
+    status.textContent = "Analysis failed. You can try again.";
+  } finally {
+    button.disabled = false;
+  }
+}
+
+/* LEEF AI CHAT */
+function toggleChat() {
+  const chat = document.getElementById("chatBox");
+  const isHidden = chat.classList.contains("hidden");
+
+  chat.classList.toggle("hidden");
+
+  if (isHidden) {
+    setTimeout(() => document.getElementById("chatText").focus(), 100);
+  }
+}
+
+function openChat() {
+  document.getElementById("chatBox").classList.remove("hidden");
+  setTimeout(() => document.getElementById("chatText").focus(), 100);
+}
+
+function addMessage(text, type) {
+  const messages = document.getElementById("chatMessages");
+  const bubble = document.createElement("div");
+  bubble.className = `message ${type}`;
+  bubble.textContent = text;
+  messages.appendChild(bubble);
+  messages.scrollTop = messages.scrollHeight;
+}
+
+function getLEEFResponse(question) {
+  const q = question.toLowerCase();
+
+  if (/hello|hi\b|hey|hii/.test(q)) {
+    return "Hey! 🌿 I'm LEEF, your EcoCampus assistant. Ask me about recycling, water, energy or food waste.";
+  }
+
+  if (/food|leftover|canteen|compost/.test(q)) {
+    return "🍱 To reduce food waste, take portions you can finish, store food safely, share unopened surplus where permitted, and separate food scraps for composting if your campus supports it.";
+  }
+
+  if (/plastic|bottle|recycl/.test(q)) {
+    return "♻️ Empty and clean recyclable containers where practical. Separate plastic, paper, metal and glass according to local rules. Avoid putting contaminated packaging into recycling bins.";
+  }
+
+  if (/water|tap|leak/.test(q)) {
+    return "💧 Turn taps off completely, report leaks, use water only when needed and avoid unnecessary running water while washing. A small leak can waste water continuously.";
+  }
+
+  if (/energy|electric|light|fan|power/.test(q)) {
+    return "⚡ Switch off lights, fans and equipment when they're not needed. Use natural light where possible and enable energy-saving settings on devices.";
+  }
+
+  if (/challenge|points|leaderboard/.test(q)) {
+    return "🏆 Open the Challenges tab, choose a mission and mark it complete to earn eco points. Your score is saved in this browser.";
+  }
+
+  if (/image|photo|picture|identify|tracker/.test(q)) {
+    return "📸 Open the Image Tracker tab, upload or take a photo, and select Identify Waste. The model gives a best-effort suggestion, so verify the category before disposal.";
+  }
+
+  if (/location|map|svvv|directions|campus/.test(q)) {
+    return "📍 Open the Location tab to view the Shri Vaishnav Vidyapeeth Vishwavidyalaya campus map and directions.";
+  }
+
+  if (/report|track|tracking/.test(q)) {
+    return "📊 Open the Impact page to submit a waste report. Then visit Tracking to see your saved reports and category totals.";
+  }
+
+  if (/thank/.test(q)) {
+    return "You're welcome! 🌱 Small actions add up. Keep making greener choices!";
+  }
+
+  return "🌿 Here are a few ways to start: reduce single-use items, separate waste correctly, save water, switch off unused electricity and avoid food waste. You can also explore the Image Tracker and Challenges pages for more help.";
+}
+
+function sendChatMessage(text) {
+  const cleanText = text.trim();
+  if (!cleanText) return;
+
+  addMessage(cleanText, "user");
+  document.getElementById("chatText").value = "";
+
+  setTimeout(() => {
+    addMessage(getLEEFResponse(cleanText), "bot");
+  }, 250);
+}
+
+document.getElementById("chatForm").addEventListener("submit", function(event) {
+  event.preventDefault();
+  sendChatMessage(document.getElementById("chatText").value);
+});
+
+function sendQuick(text) {
+  sendChatMessage(text);
+}
+
+/* REFRESH ALL COUNTERS */
+function renderAll() {
+  document.getElementById("heroReports").textContent = reports.length;
+  document.getElementById("heroChallenges").textContent = completedChallenges.length;
+  document.getElementById("heroPoints").textContent = ecoPoints;
+
+  document.getElementById("actionCount").textContent = completedChallenges.length;
+  document.getElementById("reportCount").textContent = reports.length;
+  document.getElementById("points").textContent = ecoPoints;
+
+  renderReports();
+  renderWasteBars("wasteBars");
+  renderTracking();
+  renderChallenges();
+  renderLeaderboard();
+}
+
+document.getElementById("rankFilter").addEventListener("change", renderLeaderboard);
+
+renderAll();
+</script>
+</body>
+</html>
